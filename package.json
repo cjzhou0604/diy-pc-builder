@@ -1,0 +1,6 @@
+{
+  "name": "diy-pc-builder",
+  "private": true,
+  "type": "module",
+  "scripts": { "update": "node scripts/update-prices.mjs" }
+}

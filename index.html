@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>装机侠 · 台式电脑DIY配置器</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.0.18/chinese-simplified-400.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.0.18/chinese-simplified-500.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5.0.18/chinese-simplified-700.min.css">
+<style>
+  :root{
+    --bg:#f4f5f7; --card:#ffffff; --ink:#1b1d24; --sub:#6b7280;
+    --jd:#e1251b; --tb:#ff5000; --line:#e8eaee;
+    --ok:#16a34a; --warn:#d97706; --err:#dc2626; --acc:#3b5bfd;
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:"Noto Sans SC",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+  ::selection{background:#ffe1d6}
+
+  /* ---------- Header ---------- */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .head-in{max-width:1280px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+  .logo-badge{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--jd),var(--tb));display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;box-shadow:0 4px 10px rgba(225,37,27,.25)}
+  .head-price{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:13px;color:var(--sub)}
+  .head-total b{font-size:17px;color:var(--jd)}
+  .btn{border:none;cursor:pointer;font-family:inherit;border-radius:9px;padding:8px 16px;font-size:13px;font-weight:500;transition:.18s}
+  .btn-ghost{background:#f1f2f5;color:var(--ink)}
+  .btn-ghost:hover{background:#e6e8ed}
+  .btn-main{background:linear-gradient(135deg,var(--jd),#f4511e);color:#fff;box-shadow:0 4px 12px rgba(225,37,27,.3)}
+  .btn-main:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+  /* ---------- Hero ---------- */
+  .hero{max-width:1280px;margin:22px auto 0;padding:0 20px}
+  .hero-banner{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(115deg,#16181f 0%,#23262f 55%,#3a1d1a 100%);padding:40px 44px;color:#fff}
+  .hero-banner::before,.hero-banner::after{content:"";position:absolute;border-radius:50%;filter:blur(60px)}
+  .hero-banner::before{width:340px;height:340px;background:rgba(225,37,27,.35);top:-140px;right:8%}
+  .hero-banner::after{width:280px;height:280px;background:rgba(255,80,0,.25);bottom:-150px;right:30%}
+  .hero-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:4px 12px;border-radius:99px;font-size:12px;color:#ffd9c8;margin-bottom:14px}
+  .hero-banner h1{font-size:30px;font-weight:700;letter-spacing:1px;margin-bottom:10px}
+  .hero-banner p{color:#b9bdc9;max-width:560px;line-height:1.7;font-size:13.5px}
+  .hero-chips{position:absolute;right:44px;top:50%;transform:translateY(-50%);display:flex;gap:10px;z-index:2}
+  .hero-chipcard{width:96px;height:118px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:12px;color:#cfd3dd;backdrop-filter:blur(4px)}
+  .hero-chipcard span:first-child{font-size:26px}
+  .hero-chipcard:nth-child(2){transform:translateY(-14px)}
+  .hero-chipcard:nth-child(3){transform:translateY(8px)}
+
+  /* ---------- Presets ---------- */
+  .presets{max-width:1280px;margin:20px auto 0;padding:0 20px}
+  .sec-title{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;margin:6px 0 14px}
+  .sec-title::before{content:"";width:4px;height:18px;border-radius:2px;background:linear-gradient(var(--jd),var(--tb))}
+  .sec-title small{font-weight:400;color:var(--sub);font-size:12px}
+  .preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .preset{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+  .preset:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(20,22,30,.08);border-color:#ffc9b3}
+  .preset .p-icon{font-size:24px}
+  .preset h3{font-size:15px;margin:8px 0 4px}
+  .preset p{color:var(--sub);font-size:12px;line-height:1.65;min-height:56px}
+  .preset .p-price{font-size:18px;font-weight:700;color:var(--jd)}
+  .preset .p-price small{font-size:11px;color:var(--sub);font-weight:400}
+  .preset .p-go{position:absolute;right:16px;bottom:16px;font-size:12px;color:var(--tb);font-weight:500}
+
+  /* ---------- Main layout ---------- */
+  .main{max-width:1280px;margin:26px auto 60px;padding:0 20px;display:grid;grid-template-columns:1fr 330px;gap:22px;align-items:start}
+
+  /* Tabs */
+  .tabs{position:sticky;top:64px;z-index:40;background:var(--bg);padding:10px 0 12px;display:flex;gap:8px;flex-wrap:wrap}
+  .tab{display:flex;align-items:center;gap:6px;padding:8px 15px;border-radius:99px;background:var(--card);border:1px solid var(--line);cursor:pointer;font-size:13px;color:var(--sub);transition:.15s;user-select:none}
+  .tab:hover{border-color:#f3b99f;color:var(--ink)}
+  .tab.active{background:linear-gradient(135deg,var(--jd),#f4511e);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(225,37,27,.28)}
+  .tab .dot{width:16px;height:16px;border-radius:50%;background:var(--ok);color:#fff;font-size:10px;display:none;align-items:center;justify-content:center}
+  .tab.sel .dot{display:flex}
+  .tab.active .dot{background:rgba(255,255,255,.9);color:var(--jd)}
+
+  .toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .search{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+  .search input{border:none;outline:none;width:100%;font-family:inherit;font-size:13px;background:transparent}
+  .sortsel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:13px;color:var(--ink);cursor:pointer;outline:none}
+  .cat-head{display:flex;align-items:baseline;gap:10px;margin:4px 0 12px}
+  .cat-head h2{font-size:16px}
+  .cat-head span{color:var(--sub);font-size:12px}
+
+  /* Cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;padding-bottom:26px}
+  .card{background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px;transition:.18s;position:relative}
+  .card:hover{box-shadow:0 8px 22px rgba(20,22,30,.07);transform:translateY(-2px)}
+  .card.picked{border-color:var(--tb);background:linear-gradient(180deg,#fff9f6,#fff)}
+  .card.picked::after{content:"✓ 已选";position:absolute;top:-1px;right:-1px;background:linear-gradient(135deg,var(--jd),var(--tb));color:#fff;font-size:11px;padding:4px 10px;border-radius:0 12px 0 12px;font-weight:500}
+  .c-brand{font-size:11px;color:var(--sub);letter-spacing:.5px}
+  .c-name{font-size:14.5px;font-weight:700;line-height:1.45}
+  .c-tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{background:#f1f2f5;border-radius:6px;padding:3px 8px;font-size:11.5px;color:#4b5563}
+  .tag.hot{background:#fff0eb;color:var(--tb)}
+  .tag.gpu-jd{background:#fdeceb;color:var(--jd)}
+  .c-prices{display:flex;gap:8px;margin-top:auto}
+  .price-box{flex:1;border-radius:9px;padding:7px 10px;display:flex;flex-direction:column;gap:1px}
+  .price-box small{font-size:10.5px;opacity:.85}
+  .price-box b{font-size:16px;font-weight:700}
+  .p-jd{background:#fdeceb;color:var(--jd)}
+  .p-tb{background:#fff0eb;color:var(--tb)}
+  .c-btn{width:100%;padding:9px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:var(--ink);transition:.15s}
+  .c-btn:hover{border-color:var(--tb);color:var(--tb)}
+  .card.picked .c-btn{background:linear-gradient(135deg,var(--jd),#f4511e);border-color:transparent;color:#fff}
+  .empty{grid-column:1/-1;text-align:center;color:var(--sub);padding:50px 0;font-size:13px}
+
+  /* ---------- Summary ---------- */
+  .summary{position:sticky;top:130px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .s-head{background:linear-gradient(135deg,#20222a,#33363f);color:#fff;padding:16px 18px}
+  .s-head h3{font-size:15px;display:flex;align-items:center;gap:8px}
+  .s-head p{font-size:11.5px;color:#a7abba;margin-top:4px}
+  .s-list{padding:10px 18px;max-height:330px;overflow-y:auto}
+  .s-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .s-row:last-child{border-bottom:none}
+  .s-icon{width:30px;height:30px;border-radius:8px;background:#f4f5f7;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .s-info{flex:1;min-width:0}
+  .s-info .k{font-size:11px;color:var(--sub)}
+  .s-info .v{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .s-info .v.none{color:#b6bac2;font-weight:400}
+  .s-price{font-size:12.5px;font-weight:700;color:var(--jd);flex-shrink:0}
+  .s-remove{cursor:pointer;color:#c2c6cd;font-size:14px;padding:2px;flex-shrink:0;line-height:1}
+  .s-remove:hover{color:var(--err)}
+  .s-power{margin:4px 18px 0;padding:12px 0;border-top:1px solid var(--line)}
+  .s-power .pw-top{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:7px}
+  .s-power .pw-top b{color:var(--ink);font-weight:500}
+  .pw-bar{height:8px;border-radius:99px;background:#eef0f3;overflow:hidden}
+  .pw-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#22c55e,#84cc16);transition:width .4s}
+  .pw-fill.warn{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+  .pw-note{font-size:11px;color:var(--sub);margin-top:6px}
+  .s-alerts{margin:10px 18px 0;display:flex;flex-direction:column;gap:7px}
+  .alert{border-radius:9px;padding:9px 11px;font-size:12px;line-height:1.55;display:flex;gap:7px}
+  .alert.err{background:#fdecec;color:#b91c1c}
+  .alert.warn{background:#fff7e6;color:#b45309}
+  .alert.ok{background:#ecfdf3;color:#15803d}
+  .s-totals{padding:14px 18px;border-top:1px solid var(--line);margin-top:12px;background:#fafbfc}
+  .t-row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--sub);padding:3px 0}
+  .t-row b{font-weight:500;color:var(--ink)}
+  .t-row.big{margin-top:6px;padding-top:10px;border-top:1px dashed var(--line)}
+  .t-row.big b{font-size:22px;color:var(--jd);font-weight:700}
+  .s-actions{padding:0 18px 18px;display:flex;gap:10px}
+  .s-actions .btn{flex:1;text-align:center}
+
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%) translateY(20px);background:#20222a;color:#fff;padding:11px 22px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer{border-top:1px solid var(--line);background:#fff;padding:22px 20px;text-align:center;color:var(--sub);font-size:12px;line-height:1.9}
+
+  @media(max-width:1020px){
+    .main{grid-template-columns:1fr}
+    .summary{position:static}
+    .preset-grid{grid-template-columns:repeat(2,1fr)}
+    .hero-chips{display:none}
+  }
+  @media(max-width:560px){
+    .preset-grid{grid-template-columns:1fr}
+    .hero-banner{padding:28px 22px}
+    .hero-banner h1{font-size:22px}
+    .head-price span.hide-sm{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="logo"><div class="logo-badge">🛠️</div>装机侠 <span style="font-weight:400;color:var(--sub);font-size:12px">DIY 装机配置器</span></div>
+    <div class="head-price">
+      <span class="hide-sm" style="color:var(--sub)">行情日期：2026-09-13</span>
+      <span class="head-total">已选合计 <b id="headTotal">¥0</b></span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-banner">
+    <span class="hero-chip">🔥 价格同步自 京东 / 淘宝 · 每日更新参考行情</span>
+    <h1>自己动手，装一台称心的台式机</h1>
+    <p>覆盖 AM5 / AM4 / LGA1700 / LGA1851 全平台，CPU、显卡、主板、内存、固态、电源、机箱、散热八大件自由搭配，自动进行接口 / 内存代数 / 功耗 / 尺寸兼容性检查，装机不再翻车。</p>
+    <div class="hero-chips">
+      <div class="hero-chipcard"><span>🧠</span>CPU</div>
+      <div class="hero-chipcard"><span>🎮</span>显卡</div>
+      <div class="hero-chipcard"><span>⚡</span>内存</div>
+    </div>
+  </div>
+</section>
+
+<section class="presets">
+  <div class="sec-title">一键装机方案 <small>按预算快速套用，套用后仍可自由更换单品</small></div>
+  <div class="preset-grid" id="presetGrid"></div>
+</section>
+
+<div class="main">
+  <div>
+    <div class="tabs" id="tabs"></div>
+    <div class="toolbar">
+      <div class="search">🔍 <input id="searchInput" type="text" placeholder="搜索型号 / 品牌，如「7800X3D」「迫击炮」"></div>
+      <select class="sortsel" id="sortSel">
+        <option value="default">综合排序（推荐）</option>
+        <option value="low">价格从低到高</option>
+        <option value="high">价格从高到低</option>
+        <option value="jdlow">京东价从低到高</option>
+      </select>
+    </div>
+    <div class="cat-head">
+      <h2 id="catTitle"></h2>
+      <span id="catHint"></span>
+    </div>
+    <div class="grid" id="cardGrid"></div>
+  </div>
+
+  <aside>
+    <div class="summary">
+      <div class="s-head">
+        <h3>📋 我的配置单 <span id="selCount" style="font-size:11px;font-weight:400;color:#ffd9c8"></span></h3>
+        <p>点击配件卡片「选它」即可加入</p>
+      </div>
+      <div class="s-list" id="sList"></div>
+      <div class="s-power" id="sPower"></div>
+      <div class="s-alerts" id="sAlerts"></div>
+      <div class="s-totals" id="sTotals"></div>
+      <div class="s-actions">
+        <button class="btn btn-ghost" id="btnClear">清空</button>
+        <button class="btn btn-main" id="btnCopy">📄 复制配置单</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div id="toast"></div>
+
+<footer>
+  装机侠 · 台式电脑 DIY 配置器 ｜ 价格来源：京东自营 / 淘宝百亿补贴与旗舰店行情（2026 年 9 月采集，随促销波动，下单前请以商品页实时价格为准）<br>
+  配件参数以品牌官网规格书为准 · 本页仅供装机参考，非官方商城
+</footer>
+
+<script>
+/* ================= 配件数据库（价格为 2026-09 京东/淘宝参考价） ================= */
+const DB = {
+cpu:[
+ {id:'c7500f',name:'锐龙 R5 7500F（散片）',brand:'AMD',jd:749,tb:679,socket:'AM5',power:110,igpu:false,tags:['6核12线程','Zen4','至高5.0GHz','38MB缓存','65W','无核显'],hot:true,note:'千元内游戏神U，性价比装机首选'},
+ {id:'c9600x',name:'锐龙 R5 9600X（盒装）',brand:'AMD',jd:1299,tb:1249,socket:'AM5',power:110,igpu:true,tags:['6核12线程','Zen5','至高5.4GHz','38MB缓存','65W','带核显']},
+ {id:'c8500g',name:'锐龙 R5 8500G（盒装）',brand:'AMD',jd:999,tb:939,socket:'AM5',power:90,igpu:true,tags:['6核12线程','Radeon 740M核显','至高5.0GHz','65W','免独显办公']},
+ {id:'c7800x3d',name:'锐龙 R7 7800X3D（盒装）',brand:'AMD',jd:2069,tb:1979,socket:'AM5',power:162,igpu:true,tags:['8核16线程','Zen4 3D缓存','104MB缓存','至高5.0GHz','120W'],hot:true,note:'上一代游戏U天花板，2K电竞首选'},
+ {id:'c9800x3d',name:'锐龙 R7 9800X3D（盒装）',brand:'AMD',jd:2999,tb:2899,socket:'AM5',power:162,igpu:true,tags:['8核16线程','Zen5 3D缓存','104MB缓存','至高5.2GHz','120W'],hot:true,note:'现役最强游戏处理器'},
+ {id:'c9950x3d',name:'锐龙 R9 9950X3D（盒装）',brand:'AMD',jd:5599,tb:5399,socket:'AM5',power:230,igpu:true,tags:['16核32线程','144MB缓存','至高5.7GHz','170W','游戏生产力双修']},
+ {id:'c5600',name:'锐龙 R5 5600（散片）',brand:'AMD',jd:499,tb:439,socket:'AM4',power:88,igpu:false,tags:['6核12线程','Zen3','至高4.4GHz','35MB缓存','65W','无核显'],note:'AM4老平台升级/低价装机'},
+ {id:'c5700x3d',name:'锐龙 R7 5700X3D（散片）',brand:'AMD',jd:899,tb:859,socket:'AM4',power:142,igpu:false,tags:['8核16线程','3D缓存100MB','至高4.1GHz','105W','无核显'],note:'AM4平台游戏终极升级'},
+ {id:'c14600kf',name:'酷睿 i5-14600KF（盒装）',brand:'Intel',jd:1499,tb:1439,socket:'LGA1700',power:181,igpu:false,tags:['14核20线程(6P+8E)','至高5.3GHz','24MB L3','最大睿频功耗181W','无核显']},
+ {id:'c14700kf',name:'酷睿 i7-14700KF（盒装）',brand:'Intel',jd:1999,tb:1929,socket:'LGA1700',power:253,igpu:false,tags:['20核28线程(8P+12E)','至高5.6GHz','33MB L3','最大睿频功耗253W','无核显']},
+ {id:'c245k',name:'酷睿 Ultra 5 245K（盒装）',brand:'Intel',jd:1599,tb:1519,socket:'LGA1851',power:159,igpu:true,tags:['14核14线程(6P+8E)','至高5.2GHz','Xe核显','最大睿频功耗159W']},
+ {id:'c265k',name:'酷睿 Ultra 7 265K（盒装）',brand:'Intel',jd:2399,tb:2289,socket:'LGA1851',power:250,igpu:true,tags:['20核20线程(8P+12E)','至高5.5GHz','Xe核显','最大睿频功耗250W'],note:'Arrow Lake 全能U，能效优秀'},
+ {id:'c285k',name:'酷睿 Ultra 9 285K（盒装）',brand:'Intel',jd:3899,tb:3719,socket:'LGA1851',power:250,igpu:true,tags:['24核24线程(8P+16E)','至高5.7GHz','Xe核显','最大睿频功耗250W']}
+],
+mb:[
+ {id:'mb650mp',name:'PRO B650M-P',brand:'微星 MSI',jd:699,tb:649,socket:'AM5',mem:'DDR5',form:'M-ATX',tags:['AM5','DDR5','M-ATX','双M.2','入门够用']},
+ {id:'mb650mr',name:'PRIME B650M-R 大师',brand:'华硕 ASUS',jd:749,tb:699,socket:'AM5',mem:'DDR5',form:'M-ATX',tags:['AM5','DDR5','M-ATX','双M.2','支持7500F/7700X']},
+ {id:'mb650mortar',name:'MAG B650M MORTAR WIFI 迫击炮',brand:'微星 MSI',jd:1049,tb:989,socket:'AM5',mem:'DDR5',form:'M-ATX',tags:['AM5','DDR5','M-ATX','WIFI6','12+2+1供电','支持9800X3D'],hot:true},
+ {id:'mbtufb650',name:'TUF GAMING B650M-PLUS WIFI 重炮手',brand:'华硕 ASUS',jd:1099,tb:1039,socket:'AM5',mem:'DDR5',form:'M-ATX',tags:['AM5','DDR5','M-ATX','WIFI6','12+2供电']},
+ {id:'mb850mortar',name:'MAG B850M MORTAR WIFI 迫击炮',brand:'微星 MSI',jd:1299,tb:1229,socket:'AM5',mem:'DDR5',form:'M-ATX',tags:['AM5','DDR5','M-ATX','WIFI7','12+2+1供电']},
+ {id:'mbx870a',name:'ROG STRIX X870-A GAMING WIFI 吹雪',brand:'华硕 ASUS',jd:2899,tb:2769,socket:'AM5',mem:'DDR5',form:'ATX',tags:['AM5','DDR5','ATX','WIFI7','USB4','白色高颜值'],hot:true},
+ {id:'mb550mortar',name:'B550M MORTAR WIFI 迫击炮',brand:'微星 MSI',jd:649,tb:609,socket:'AM4',mem:'DDR4',form:'M-ATX',tags:['AM4','DDR4','M-ATX','WIFI6','支持5700X3D']},
+ {id:'mb550elite',name:'B550M AORUS ELITE 小雕',brand:'技嘉 GIGABYTE',jd:599,tb:559,socket:'AM4',mem:'DDR4',form:'M-ATX',tags:['AM4','DDR4','M-ATX','10+2供电']},
+ {id:'mb760ma',name:'PRO B760M-A WIFI',brand:'微星 MSI',jd:899,tb:849,socket:'LGA1700',mem:'DDR5',form:'M-ATX',tags:['LGA1700','DDR5','M-ATX','WIFI6','支持12/13/14代']},
+ {id:'mb760mk',name:'PRIME B760M-K D4',brand:'华硕 ASUS',jd:649,tb:609,socket:'LGA1700',mem:'DDR4',form:'M-ATX',tags:['LGA1700','DDR4','M-ATX','支持12/13/14代']},
+ {id:'mbz790th',name:'MAG Z790 TOMAHAWK MAX WIFI 战斧',brand:'微星 MSI',jd:1899,tb:1799,socket:'LGA1700',mem:'DDR5',form:'ATX',tags:['LGA1700','DDR5','ATX','WIFI7','K系超频']},
+ {id:'mbz890th',name:'MAG Z890 TOMAHAWK WIFI 战斧',brand:'微星 MSI',jd:2299,tb:2189,socket:'LGA1851',mem:'DDR5',form:'ATX',tags:['LGA1851','DDR5','ATX','WIFI7','支持Ultra 200S超频']},
+ {id:'mbz890a',name:'ROG STRIX Z890-A GAMING WIFI 吹雪',brand:'华硕 ASUS',jd:3299,tb:3139,socket:'LGA1851',mem:'DDR5',form:'ATX',tags:['LGA1851','DDR5','ATX','WIFI7','雷电4','白色旗舰']}
+],
+ram:[
+ {id:'rkb32d5',name:'银爵 DDR5 6000 32GB(16G×2) C30',brand:'金邦 KINGBANK',jd:699,tb:659,mem:'DDR5',cap:32,tags:['DDR5','6000MHz','CL30','32G套装','海力士颗粒'],hot:true},
+ {id:'rf532d5',name:'焰锋戟 DDR5 6000 32GB(16G×2) C30',brand:'芝奇 G.SKILL',jd:899,tb:859,mem:'DDR5',cap:32,tags:['DDR5','6000MHz','CL30','32G套装','终身保固']},
+ {id:'rag48d5',name:'海姆达尔 DDR5 6400 RGB 48GB(24G×2) C32',brand:'阿斯加特 Asgard',jd:1299,tb:1249,mem:'DDR5',cap:48,tags:['DDR5','6400MHz','48G套装','RGB灯条']},
+ {id:'rf564d5',name:'皇家戟 DDR5 6400 64GB(32G×2) C32',brand:'芝奇 G.SKILL',jd:1899,tb:1799,mem:'DDR5',cap:64,tags:['DDR5','6400MHz','64G大容量','RGB']},
+ {id:'rcru16d5',name:'DDR5 5600 16GB 单条',brand:'英睿达 Crucial',jd:379,tb:359,mem:'DDR5',cap:16,tags:['DDR5','5600MHz','16G单条','美光原厂颗粒']},
+ {id:'rkb32d4',name:'银爵 DDR4 3600 32GB(16G×2)',brand:'金邦 KINGBANK',jd:659,tb:629,mem:'DDR4',cap:32,tags:['DDR4','3600MHz','32G套装']},
+ {id:'rgw16d4',name:'天策 DDR4 3200 16GB(8G×2)',brand:'光威 GLOWAY',jd:399,tb:379,mem:'DDR4',cap:16,tags:['DDR4','3200MHz','16G套装','长鑫颗粒']}
+],
+gpu:[
+ {id:'gb580',name:'Intel Arc B580 12G 终结者',brand:'铭瑄 MAXSUN',jd:1999,tb:1899,tdp:150,len:272,tags:['12GB GDDR6','192bit','Xe2架构','整机建议550W']},
+ {id:'g9060xt',name:'RX 9060 XT 16G 白金版',brand:'蓝宝石 SAPPHIRE',jd:2899,tb:2799,tdp:180,len:267,tags:['16GB GDDR6','128bit','RDNA4','整机建议600W'],hot:true,note:'2000价位16G大显存，1080P通吃'},
+ {id:'g5060',name:'RTX 5060 8G VENTUS 2X 万图师',brand:'微星 MSI',jd:2299,tb:2199,tdp:145,len:250,tags:['8GB GDDR7','128bit','DLSS4','整机建议550W']},
+ {id:'g5060ti',name:'RTX 5060 Ti 16G X-GAMING OC 月白',brand:'索泰 ZOTAC',jd:3499,tb:3399,tdp:180,len:305,tags:['16GB GDDR7','128bit','DLSS4','整机建议650W'],hot:true,note:'1080P/2K入门主流之选'},
+ {id:'g9070',name:'RX 9070 16G 白金版',brand:'蓝宝石 SAPPHIRE',jd:4499,tb:4349,tdp:220,len:320,tags:['16GB GDDR6','256bit','RDNA4','整机建议700W']},
+ {id:'g5070',name:'RTX 5070 12G VENTUS 2X OC',brand:'微星 MSI',jd:4799,tb:4599,tdp:250,len:250,tags:['12GB GDDR7','192bit','DLSS4','整机建议650W']},
+ {id:'g9070xt',name:'RX 9070 XT 16G 超白金',brand:'蓝宝石 SAPPHIRE',jd:5299,tb:5099,tdp:304,len:320,tags:['16GB GDDR6','256bit','RDNA4','整机建议800W'],hot:true,note:'2K高帧率性价比王者'},
+ {id:'g5070ti',name:'RTX 5070 Ti 16G 魔鹰 GAMING OC',brand:'技嘉 GIGABYTE',jd:6499,tb:6299,tdp:300,len:305,tags:['16GB GDDR7','256bit','DLSS4','整机建议750W']},
+ {id:'g5080',name:'TUF RTX 5080 16G GAMING OC',brand:'华硕 ASUS',jd:9499,tb:9199,tdp:360,len:331,tags:['16GB GDDR7','256bit','DLSS4','整机建议850W'],note:'4K游戏主力'},
+ {id:'g5090d',name:'RTX 5090 D V2 24G VENTUS 3X OC',brand:'微星 MSI',jd:16999,tb:16499,tdp:575,len:340,tags:['24GB GDDR7','384bit','DLSS4','整机建议1000W'],note:'旗舰卡皇，4K/8K生产力'}
+],
+ssd:[
+ {id:'st6001t',name:'致态 Ti600 1TB',brand:'长江存储 YMTC',jd:799,tb:759,tags:['PCIe4.0x4','读7000MB/s','写6000MB/s','原厂颗粒','5年质保'],hot:true},
+ {id:'st71001t',name:'致态 TiPlus7100 1TB',brand:'长江存储 YMTC',jd:999,tb:949,tags:['PCIe4.0x4','读7000MB/s','独立缓存优化','5年质保']},
+ {id:'st6002t',name:'致态 Ti600 2TB',brand:'长江存储 YMTC',jd:1399,tb:1329,tags:['PCIe4.0x4','读7000MB/s','2TB大容量','5年质保']},
+ {id:'sn71002t',name:'SN7100 2TB',brand:'西部数据 WD',jd:1299,tb:1239,tags:['PCIe4.0x4','读7250MB/s','写6900MB/s','5年质保']},
+ {id:'s990p2t',name:'990 PRO 2TB',brand:'三星 SAMSUNG',jd:1899,tb:1799,tags:['PCIe4.0x4','读7450MB/s','写6900MB/s','独立缓存','旗舰盘']},
+ {id:'nm7904t',name:'NM790 4TB',brand:'雷克沙 Lexar',jd:2699,tb:2599,tags:['PCIe4.0x4','读7400MB/s','4TB超大容量']}
+],
+psu:[
+ {id:'phope500',name:'HOPE-6000DS 500W 铜牌',brand:'长城 GreatWall',jd:199,tb:179,watts:500,tags:['500W','铜牌','非模组','办公/核显平台']},
+ {id:'ptg750',name:'TR-KG750 750W 金牌全模组 ATX3.1',brand:'利民 THERMALRIGHT',jd:329,tb:309,watts:750,tags:['750W','金牌','全模组','ATX3.1','12V-2x6接口'],hot:true,note:'700W价位屠夫，带50系显卡'},
+ {id:'phz750',name:'黑钻 750W V4 金牌全模组',brand:'先马 SAMA',jd:399,tb:379,watts:750,tags:['750W','金牌','全模组','一键启停']},
+ {id:'pgm750',name:'金竞蝠 GM750W 金牌全模组 ATX3.1',brand:'安耐美 ENERMAX',jd:429,tb:399,watts:750,tags:['750W','金牌','全模组','全日系电容','5年保']},
+ {id:'px7',name:'X7 750W 金牌全模组 ATX3.1',brand:'长城 GreatWall',jd:499,tb:469,watts:750,tags:['750W','金牌','全模组','原生PCIe5.1','漏电监测']},
+ {id:'pl3850',name:'LEADEX III 850W 金牌全模组',brand:'振华 ZHENHUA',jd:749,tb:699,watts:850,tags:['850W','金牌','全模组','十年质保']},
+ {id:'pgx850',name:'FOCUS GX-850 ATX3.0 金牌全模组',brand:'海韵 SEASONIC',jd:999,tb:949,watts:850,tags:['850W','金牌','全模组','十年质保'],hot:true},
+ {id:'pl71000',name:'LEADEX VII 1000W 白金全模组 ATX3.1',brand:'振华 ZHENHUA',jd:1399,tb:1299,watts:1000,tags:['1000W','白金','全模组','12V-2x6','旗舰平台']}
+],
+case:[
+ {id:'xzm4',name:'平头哥 M4 黑色',brand:'先马 SAMA',jd:179,tb:159,gpuMax:330,coolerMax:163,rads:[240],forms:['M-ATX','ITX'],tags:['M-ATX','显卡限长330mm','风冷限高163mm','支持240水冷']},
+ {id:'xqz20',name:'趣造 Z20 立式风道',brand:'先马 SAMA',jd:199,tb:179,gpuMax:335,coolerMax:163,rads:[240],forms:['M-ATX','ITX'],tags:['M-ATX','显卡限长335mm','风冷限高163mm','支持240水冷','颜值海景房平替']},
+ {id:'axcl',name:'星璨 岚',brand:'爱国者 aigo',jd:219,tb:199,gpuMax:400,coolerMax:175,rads:[360,240],forms:['ATX','M-ATX','ITX'],tags:['ATX','显卡限长400mm','支持360水冷','双面玻璃'],hot:true},
+ {id:'jd31',name:'D31 网孔版',brand:'乔思伯 JONSBO',jd:499,tb:469,gpuMax:400,coolerMax:168,rads:[360,240],forms:['M-ATX','ITX'],tags:['M-ATX','显卡限长400mm','支持360水冷','铝合金质感']},
+ {id:'ll216',name:'LANCOOL 216 黑色',brand:'联力 LIANLI',jd:599,tb:569,gpuMax:392,coolerMax:180,rads:[360,240],forms:['ATX','M-ATX','ITX'],tags:['ATX','显卡限长392mm','风冷限高180mm','支持360水冷','自带2×16cm大风扇']},
+ {id:'gt502',name:'TUF GT502 弹药库',brand:'华硕 ASUS',jd:899,tb:859,gpuMax:400,coolerMax:180,rads:[360,240],forms:['ATX','M-ATX','ITX'],tags:['ATX','双仓结构','显卡限长400mm','支持360水冷']}
+],
+cooler:[
+ {id:'kax120',name:'AX120 R SE 单塔风冷',brand:'利民 THERMALRIGHT',jd:79,tb:69,type:'air',height:148,tdp:180,tags:['单塔4热管','高148mm','解热约180W','AM5/LGA1700','静音'],hot:true},
+ {id:'kpa120',name:'PA120 SE 双塔风冷',brand:'利民 THERMALRIGHT',jd:129,tb:119,type:'air',height:155,tdp:250,tags:['双塔6热管','高155mm','解热约250W','压得住7800X3D']},
+ {id:'kak620',name:'AK620 双塔风冷',brand:'九州风神 DEEPCOOL',jd:349,tb:329,type:'air',height:160,tdp:260,tags:['双塔6热管','高160mm','解热约260W','压得住265K']},
+ {id:'k240',name:'冰封棱镜 240 ARGB 水冷',brand:'利民 THERMALRIGHT',jd:279,tb:259,type:'aio',rad:240,tdp:280,tags:['240冷排','ARGB灯效','解热约280W']},
+ {id:'k360',name:'冰封棱镜 360 ARGB 水冷',brand:'利民 THERMALRIGHT',jd:399,tb:379,type:'aio',rad:360,tdp:320,tags:['360冷排','ARGB灯效','解热约320W'],hot:true},
+ {id:'klt720',name:'LT720 数显 360 水冷',brand:'九州风神 DEEPCOOL',jd:799,tb:759,type:'aio',rad:360,tdp:350,tags:['360冷排','LCD数显冷头','解热约350W','旗舰颜值']}
+]};
+
+const CATS=[
+ {key:'cpu',label:'处理器',icon:'🧠',hint:'AM5 / AM4 / LGA1700 / LGA1851 四大平台'},
+ {key:'mb',label:'主板',icon:'🧩',hint:'注意与 CPU 接口、内存代数必须一致'},
+ {key:'ram',label:'内存',icon:'⚡',hint:'DDR5 6000 C30 为 AM5 甜品频率'},
+ {key:'gpu',label:'显卡',icon:'🎮',hint:'注意长度与机箱限长、电源功率'},
+ {key:'ssd',label:'固态硬盘',icon:'💾',hint:'NVMe M.2 建议 1TB 起步'},
+ {key:'psu',label:'电源',icon:'🔋',hint:'整机功耗 ×1.5 以上更稳妥'},
+ {key:'case',label:'机箱',icon:'📦',hint:'关注显卡限长 / 风冷限高 / 冷排支持'},
+ {key:'cooler',label:'散热器',icon:'❄️',hint:'风冷看高度，水冷看冷排规格'}
+];
+
+const PRESETS=[
+ {icon:'🏠',name:'办公家用 · 核显轻娱乐',desc:'锐龙 8500G 核显平台，无需独显，办公网课、影音剪辑轻负载全能，安静省电。',items:{cpu:'c8500g',mb:'mb650mp',ram:'rcru16d5',ssd:'st6001t',psu:'phope500',case:'xzm4',cooler:'kax120'}},
+ {icon:'🎯',name:'主流游戏 · 1080P/2K 入门',desc:'7500F + RTX 5060 Ti 16G，网游 2K 高帧、3A 1080P 畅玩，DLSS4 加持。',items:{cpu:'c7500f',mb:'mb650mr',ram:'rkb32d5',gpu:'g5060ti',ssd:'st6001t',psu:'ptg750',case:'xqz20',cooler:'kax120'}},
+ {icon:'🚀',name:'高端电竞 · 2K 高帧',desc:'7800X3D + RX 9070 XT 16G，2K 分辨率高帧电竞，三角洲/CS2/永劫无间拉满。',items:{cpu:'c7800x3d',mb:'mb650mortar',ram:'rf532d5',gpu:'g9070xt',ssd:'st71001t',psu:'pl3850',case:'axcl',cooler:'k360'}},
+ {icon:'👑',name:'旗舰发烧 · 4K 全能',desc:'9800X3D + RTX 5080 + 64G 内存，4K 全特效游戏、直播、AI 创作一步到位。',items:{cpu:'c9800x3d',mb:'mbx870a',ram:'rf564d5',gpu:'g5080',ssd:'s990p2t',psu:'pgx850',case:'ll216',cooler:'klt720'}}
+];
+
+/* ================= 状态 ================= */
+let selected={};           // cat -> item id
+let activeCat='cpu';
+let keyword='',sortMode='default';
+
+const $=id=>document.getElementById(id);
+const findItem=(cat,id)=>DB[cat].find(x=>x.id===id);
+const minPrice=it=>Math.min(it.jd,it.tb);
+const fmt=n=>'¥'+n.toLocaleString('zh-CN');
+
+/* ================= 预设 ================= */
+function renderPresets(){
+  $('presetGrid').innerHTML=PRESETS.map((p,i)=>{
+    const total=Object.entries(p.items).reduce((s,[cat,id])=>s+minPrice(findItem(cat,id)),0);
+    return `<div class="preset" onclick="applyPreset(${i})">
+      <div class="p-icon">${p.icon}</div>
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <div class="p-price">≈${fmt(total)} <small>起（淘宝最低价）</small></div>
+      <span class="p-go">一键套用 →</span>
+    </div>`;
+  }).join('');
+}
+function applyPreset(i){
+  selected={...PRESETS[i].items};
+  renderAll();
+  toast('已套用「'+PRESETS[i].name+'」，可继续替换单品');
+  document.querySelector('.main').scrollIntoView({behavior:'smooth'});
+}
+
+/* ================= 分类 Tab ================= */
+function renderTabs(){
+  $('tabs').innerHTML=CATS.map(c=>{
+    const has=selected[c.key];
+    return `<div class="tab ${activeCat===c.key?'active':''} ${has?'sel':''}" onclick="switchCat('${c.key}')">
+      ${c.icon} ${c.label}<span class="dot">✓</span></div>`;
+  }).join('');
+}
+function switchCat(k){activeCat=k;keyword='';$('searchInput').value='';renderTabs();renderCards();}
+
+/* ================= 卡片 ================= */
+function renderCards(){
+  const cat=CATS.find(c=>c.key===activeCat);
+  $('catTitle').textContent=cat.icon+' '+cat.label;
+  $('catHint').textContent=cat.hint;
+  let list=[...DB[activeCat]];
+  if(keyword){
+    const kw=keyword.toLowerCase();
+    list=list.filter(it=>(it.name+it.brand+(it.tags||[]).join('')+(it.note||'')).toLowerCase().includes(kw));
+  }
+  if(sortMode==='low')list.sort((a,b)=>minPrice(a)-minPrice(b));
+  if(sortMode==='high')list.sort((a,b)=>minPrice(b)-minPrice(a));
+  if(sortMode==='jdlow')list.sort((a,b)=>a.jd-b.jd);
+
+  if(!list.length){$('cardGrid').innerHTML='<div class="empty">没有匹配的配件，换个关键词试试～</div>';return;}
+
+  $('cardGrid').innerHTML=list.map(it=>{
+    const picked=selected[activeCat]===it.id;
+    const tagHtml=(it.tags||[]).map((t,i)=>`<span class="tag ${i===0?'hot':''}">${t}</span>`).join('');
+    return `<div class="card ${picked?'picked':''}">
+      <div class="c-brand">${it.brand}${it.note?` · <span style="color:var(--tb)">${it.note}</span>`:''}</div>
+      <div class="c-name">${it.name}</div>
+      <div class="c-tags">${tagHtml}</div>
+      <div class="c-prices">
+        <div class="price-box p-jd"><small>京东</small><b>¥${it.jd.toLocaleString()}</b></div>
+        <div class="price-box p-tb"><small>淘宝</small><b>¥${it.tb.toLocaleString()}</b></div>
+      </div>
+      <button class="c-btn" onclick="pick('${activeCat}','${it.id}')">${picked?'✓ 已选择（点击取消）':'选它'}</button>
+    </div>`;
+  }).join('');
+}
+function pick(cat,id){
+  selected[cat]=selected[cat]===id?undefined:id;
+  if(!selected[cat])delete selected[cat];
+  renderAll();
+}
+
+/* ================= 兼容性 & 功耗 ================= */
+function analyze(){
+  const errors=[],warns=[];
+  const cpu=selected.cpu&&findItem('cpu',selected.cpu);
+  const mb=selected.mb&&findItem('mb',selected.mb);
+  const ram=selected.ram&&findItem('ram',selected.ram);
+  const gpu=selected.gpu&&findItem('gpu',selected.gpu);
+  const psu=selected.psu&&findItem('psu',selected.psu);
+  const box=selected.case&&findItem('case',selected.case);
+  const cool=selected.cooler&&findItem('cooler',selected.cooler);
+
+  if(cpu&&mb&&cpu.socket!==mb.socket)errors.push(`CPU（${cpu.socket}）与主板（${mb.socket}）接口不匹配，无法安装`);
+  if(mb&&ram&&mb.mem!==ram.mem)errors.push(`主板仅支持 ${mb.mem}，所选内存为 ${ram.mem}，代数不兼容`);
+  if(gpu&&box&&gpu.len>box.gpuMax)errors.push(`显卡长 ${gpu.len}mm 超出机箱限长 ${box.gpuMax}mm`);
+  if(cool&&box){
+    if(cool.type==='air'&&cool.height>box.coolerMax)errors.push(`风冷高 ${cool.height}mm 超出机箱限高 ${box.coolerMax}mm`);
+    if(cool.type==='aio'&&!box.rads.includes(cool.rad))errors.push(`机箱不支持 ${cool.rad}mm 冷排`);
+  }
+  if(mb&&box&&!box.forms.includes(mb.form))warns.push(`主板为 ${mb.form} 板型，机箱标称支持 ${box.forms.join(' / ')}`);
+  if(cpu&&cool&&cool.tdp<cpu.power)warns.push(`散热器解热能力（约${cool.tdp}W）低于 CPU 峰值功耗（${cpu.power}W），高负载可能降频`);
+
+  // 功耗估算：CPU峰值 + GPU TDP + 80W（主板/内存/硬盘/风扇）
+  const est=(cpu?cpu.power:0)+(gpu?gpu.tdp:0)+80;
+  const recommend=Math.ceil((est/0.6)/50)*50;
+  if(psu&&est>0&&psu.watts<est)errors.push(`电源额定 ${psu.watts}W 低于整机估算峰值 ${est}W，有断电风险`);
+  else if(psu&&est>0&&psu.watts<recommend*0.85)warns.push(`电源 ${psu.watts}W 满足运行，建议 ${recommend}W 以上留足余量更稳`);
+  if(cpu&&!cpu.igpu&&!gpu&&selected.mb)warns.push('所选 CPU 无核显且未选独立显卡，将无法点亮显示');
+  if(cool&&cool.type==='aio'&&!box)warns.push('请选择支持对应冷排的机箱');
+  return {errors,warns,est,recommend};
+}
+
+/* ================= 摘要面板 ================= */
+function renderSummary(){
+  const cats=CATS;
+  $('selCount').textContent=`已选 ${Object.keys(selected).length} / 8 件`;
+  $('sList').innerHTML=cats.map(c=>{
+    const it=selected[c.key]&&findItem(c.key,selected[c.key]);
+    return `<div class="s-row">
+      <div class="s-icon">${c.icon}</div>
+      <div class="s-info">
+        <div class="k">${c.label}</div>
+        <div class="v ${it?'':'none'}">${it?it.name:'待选择'}</div>
+      </div>
+      ${it?`<div class="s-price">${fmt(minPrice(it))}</div><div class="s-remove" title="移除" onclick="pick('${c.key}','${it.id}')">✕</div>`:''}
+    </div>`;
+  }).join('');
+
+  const {errors,warns,est,recommend}=analyze();
+  const psu=selected.psu&&findItem('psu',selected.psu);
+  const pw=$('sPower');
+  if(est>80){
+    const cap=psu?Math.max(psu.watts,recommend):recommend;
+    const pct=Math.min(100,Math.round(est/cap*100));
+    pw.innerHTML=`<div class="pw-top"><span>整机估算峰值功耗 <b>${est}W</b></span><span>建议电源 <b>≥${recommend}W</b></span></div>
+      <div class="pw-bar"><div class="pw-fill ${psu&&psu.watts<recommend*0.85?'warn':''}" style="width:${pct}%"></div></div>
+      <div class="pw-note">${psu?`当前电源 ${psu.watts}W · 负载率约 ${Math.round(est/psu.watts*100)}%`:'尚未选择电源'}</div>`;
+  }else pw.innerHTML='';
+
+  $('sAlerts').innerHTML=
+    errors.map(e=>`<div class="alert err">⛔ ${e}</div>`).join('')+
+    warns.map(w=>`<div class="alert warn">⚠️ ${w}</div>`).join('')+
+    (!errors.length&&!warns.length&&Object.keys(selected).length>=8?`<div class="alert ok">✅ 全部兼容性检查通过，放心下单！</div>`:'');
+
+  let jd=0,tb=0,min=0;
+  Object.entries(selected).forEach(([cat,id])=>{const it=findItem(cat,id);jd+=it.jd;tb+=it.tb;min+=minPrice(it);});
+  $('sTotals').innerHTML=`
+    <div class="t-row"><span>全部按京东价</span><b>${fmt(jd)}</b></div>
+    <div class="t-row"><span>全部按淘宝价</span><b>${fmt(tb)}</b></div>
+    <div class="t-row big"><span>全网最低组合价</span><b>${fmt(min)}</b></div>`;
+  $('headTotal').textContent=fmt(min);
+}
+
+/* ================= 操作 ================= */
+function toast(msg){
+  const t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function copyList(){
+  if(!Object.keys(selected).length){toast('配置单还是空的，先选几件配件吧');return;}
+  let jd=0,tb=0,min=0;
+  let text='【装机侠 · DIY 配置单】(价格参考：2026-09 京东/淘宝)\n';
+  CATS.forEach(c=>{
+    const it=selected[c.key]&&findItem(c.key,selected[c.key]);
+    if(it){jd+=it.jd;tb+=it.tb;min+=minPrice(it);
+      text+=`\n${c.icon} ${c.label}：${it.brand} ${it.name}\n   京东 ${fmt(it.jd)} / 淘宝 ${fmt(it.tb)}`;}
+  });
+  text+=`\n\n————————————\n京东总价：${fmt(jd)}\n淘宝总价：${fmt(tb)}\n最低组合：${fmt(min)}`;
+  const {errors}=analyze();
+  if(errors.length)text+=`\n\n⚠️ 兼容性提醒：\n${errors.map(e=>'· '+e).join('\n')}`;
+  navigator.clipboard.writeText(text).then(()=>toast('配置单已复制到剪贴板 ✅'),()=>toast('复制失败，请手动截图保存'));
+}
+
+function renderAll(){renderTabs();renderCards();renderSummary();}
+
+/* ================= 事件 ================= */
+$('searchInput').addEventListener('input',e=>{keyword=e.target.value.trim();renderCards();});
+$('sortSel').addEventListener('change',e=>{sortMode=e.target.value;renderCards();});
+$('btnCopy').addEventListener('click',copyList);
+$('btnClear').addEventListener('click',()=>{selected={};renderAll();toast('配置单已清空');});
+
+/* ===== 每日价格热更新接入 ===== */
+async function loadDailyPrices() {
+  try {
+    const res = await fetch(`data/prices.json?t=${Date.now()}`, { cache: 'no-store' });
+    const json = await res.json();
+    if (Date.now() - json.updatedAt > 25 * 3600e3) return null;  // 超25小时视为过期
+    return json;
+  } catch { return null; }   // 失败时静默回退到页面内置价格
+}
+
+loadDailyPrices().then(json => {
+  if (!json) return;
+  Object.values(DB).flat().forEach(item => {
+    if (json.prices[item.id] != null) item.jd = json.prices[item.id];
+  });
+  const d = new Date(json.updatedAt);
+  document.querySelector('.head-price span').textContent =
+    `行情日期：${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+});
+
+renderPresets();
+renderAll();
+</script>
+</body>
+</html>
