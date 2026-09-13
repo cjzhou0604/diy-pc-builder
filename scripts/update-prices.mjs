@@ -1,51 +1,109 @@
- 每日价格采集：读取 configskus.json，抓取京东价，输出 dataprices.json
-import fs from 'fspromises';
+import fs from 'fs/promises';
+import path from 'path';
 
-const SKU_FILE  = 'configskus.json';
-const OUT_FILE  = 'dataprices.json';
-const UA        = 'Mozilla5.0 (Windows NT 10.0; Win64; x64) AppleWebKit537.36';
-const MAX_RETRY = 3;
-const JITTER    = 0.35;    价格波动超过 ±35% 判为异常，保留旧值
+const SKU_FILE = 'config/skus.json';
+const OUT_FILE = 'data/prices.json';
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
-const sleep = ms = new Promise(r = setTimeout(r, ms));
-const skus  = JSON.parse(await fs.readFile(SKU_FILE, 'utf-8'));
-const old   = JSON.parse(await fs.readFile(OUT_FILE, 'utf-8').catch(() = '{prices{}}'));
-const prices = { ...old.prices };
-
-async function jdPrice(sku) {
-  for (let i = 0; i  MAX_RETRY; i++) {
+// 安全读取并解析 JSON，失败则返回空对象
+async function safeReadJSON(filePath) {
     try {
-       公开价格接口（无需登录；接口可能随时间变动，见 README 维护说明）
-      const res = await fetch(`httpsp.3.cnpricesmgetsskuIds=J_${sku}`, {
-        headers { 'User-Agent' UA, 'Referer' 'httpswww.jd.com' }
-      });
-      const arr = JSON.parse(await res.text());
-      const p = Number(arr.[0].p);
-      if (Number.isFinite(p) && p  0) return p;
+        const content = await fs.readFile(filePath, 'utf-8');
+        return JSON.parse(content);
     } catch (e) {
-      console.warn(`  [retry ${i + 1}${MAX_RETRY}] ${sku} ${e.message}`);
-      await sleep(2000  (i + 1));
+        console.warn(`[warn] 无法读取或解析 ${filePath}，将使用默认空数据。原因: ${e.message}`);
+        return {};
     }
-  }
-  throw new Error('价格源均失败');
 }
 
-let ok = 0, fail = 0;
-for (const [key, sku] of Object.entries(skus)) {
-  if (!^d{6,}$.test(sku)) { console.warn(`[skip] ${key} SKU 未配置`); continue; }
-  try {
-    const next = await jdPrice(sku);
-    const prev = prices[key];
-     异常检测：波动超限视为抓取错误，丢弃
-    prices[key] = (prev != null && Math.abs(next - prev)  prev  JITTER)  prev  next;
-    ok++;
-    await sleep(1500);    限速，避免高频请求
-  } catch (e) {
-    console.error(`[fail] ${key} ${e.message}`);
-    fail++;
-  }
+// 安全写入文件，确保目录存在
+async function safeWriteFile(filePath, data) {
+    try {
+        const dir = path.dirname(filePath);
+        await fs.mkdir(dir, { recursive: true });
+        await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        console.log(`[ok] 成功写入 ${filePath}`);
+    } catch (e) {
+        console.error(`[fatal] 写入文件失败: ${filePath}`, e);
+        process.exit(1); // 仅当磁盘写入失败时才视为致命错误
+    }
 }
 
-await fs.mkdir('data', { recursive true });
-await fs.writeFile(OUT_FILE, JSON.stringify({ updatedAt Date.now(), prices }, null, 2));
-console.log(`完成：成功 ${ok}，失败 ${fail}，跳过 ${Object.keys(skus).length - ok - fail}`);
+// 带重试和严格校验的网络请求
+async function fetchPriceWithRetry(sku, retries = 2) {
+    const url = `https://p.3.cn/prices/mgets?skuIds=J_${sku}`;
+    for (let i = 0; i < retries; i++) {
+        try {
+            const res = await fetch(url, {
+                headers: { 'User-Agent': UA, 'Referer': 'https://www.jd.com/' }
+            });
+            // 严格检查 HTTP 状态码
+            if (!res.ok) throw new Error(`HTTP 状态码异常: ${res.status}`);
+            
+            const text = await res.text();
+            const arr = JSON.parse(text); // 若返回 HTML 错误页，此处会抛出 SyntaxError 并被捕获
+            const p = Number(arr?.[0]?.p);
+            
+            if (Number.isFinite(p) && p > 0) return p;
+            throw new Error('返回了无效的价格数据');
+        } catch (e) {
+            if (i === retries - 1) throw e;
+            await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+        }
+    }
+}
+
+// 主控制流
+async function main() {
+    console.log('=== 开始价格更新任务 ===');
+    
+    const skus = await safeReadJSON(SKU_FILE);
+    const oldData = await safeReadJSON(OUT_FILE);
+    const oldPrices = oldData.prices || {};
+    const newPrices = { ...oldPrices };
+
+    let stats = { success: 0, fail: 0, skip: 0 };
+
+    for (const [key, sku] of Object.entries(skus)) {
+        if (!sku || typeof sku !== 'string' || !/^\d{6,}$/.test(sku)) {
+            console.log(`[skip] ${key}: SKU 格式无效或占位符 (${sku})`);
+            stats.skip++;
+            continue;
+        }
+
+        try {
+            console.log(`[fetch] 正在获取 ${key} (SKU: ${sku})...`);
+            const nextPrice = await fetchPriceWithRetry(sku);
+            const prevPrice = oldPrices[key];
+            
+            // 异常波动检测 (±35%)
+            if (prevPrice != null && Math.abs(nextPrice - prevPrice) / prevPrice > 0.35) {
+                console.warn(`[warn] ${key} 价格波动过大 (${prevPrice} -> ${nextPrice})，防作弊拦截，保留旧值。`);
+            } else {
+                newPrices[key] = nextPrice;
+            }
+            stats.success++;
+            await new Promise(r => setTimeout(r, 1000)); // 请求限速
+        } catch (e) {
+            // 隔离单品失败，绝不中断整体流程
+            console.error(`[fail] ${key} 获取失败: ${e.message}`);
+            stats.fail++;
+        }
+    }
+
+    console.log(`=== 采集统计: 成功 ${stats.success}, 失败 ${stats.fail}, 跳过 ${stats.skip} ===`);
+
+    const outputData = {
+        updatedAt: Date.now(),
+        prices: newPrices
+    };
+
+    await safeWriteFile(OUT_FILE, outputData);
+    console.log('=== 任务圆满结束 ===');
+}
+
+// 顶层兜底
+main().catch(err => {
+    console.error('[fatal] 未捕获的顶层异常:', err);
+    process.exit(1);
+});
